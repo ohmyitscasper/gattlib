@@ -9,6 +9,7 @@ enum handler_type { UNKNOWN = 0, NATIVE_NOTIFICATION, NATIVE_DISCONNECTION, PYTH
 
 struct gattlib_handler {
 	enum handler_type type;
+	void *handler_data;
 	union {
 		gattlib_event_handler_t notification_handler;
 		gattlib_disconnection_handler_t disconnection_handler;

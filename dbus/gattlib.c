@@ -956,11 +956,15 @@ int gattlib_notification_start(gatt_connection_t* connection, const uuid_t* uuid
 		g_error_free(error);
 		return GATTLIB_ERROR_DBUS;
 	} else {
+		connection->notification.handler_data = dbus_characteristic.gatt;
 		return GATTLIB_SUCCESS;
 	}
 }
 
 int gattlib_notification_stop(gatt_connection_t* connection, const uuid_t* uuid) {
+	/* Instead of getting the characteristic from dbus, just use cached value */
+	OrgBluezGattCharacteristic1 *signal_data = connection->notification.handler_data;
+
 	struct dbus_characteristic dbus_characteristic = get_characteristic_from_uuid(connection, uuid);
 	if (dbus_characteristic.type == TYPE_NONE) {
 		return GATTLIB_NOT_FOUND;
@@ -978,7 +982,7 @@ int gattlib_notification_stop(gatt_connection_t* connection, const uuid_t* uuid)
 #endif
 
 	g_signal_handlers_disconnect_by_func(
-			dbus_characteristic.gatt,
+			signal_data,
 			G_CALLBACK (on_handle_characteristic_property_change),
 			connection);
 
@@ -1028,11 +1032,15 @@ int gattlib_indication_start(gatt_connection_t* connection, const uuid_t* uuid) 
 		g_error_free(error);
 		return GATTLIB_ERROR_DBUS;
 	} else {
+		connection->indication.handler_data = dbus_characteristic.gatt;
 		return GATTLIB_SUCCESS;
 	}
 }
 
 int gattlib_indication_stop(gatt_connection_t* connection, const uuid_t* uuid) {
+	/* Instead of getting the characteristic from dbus, just use cached value */
+	OrgBluezGattCharacteristic1 *signal_data = connection->indication.handler_data;
+
 	struct dbus_characteristic dbus_characteristic = get_characteristic_from_uuid(connection, uuid);
 	if (dbus_characteristic.type == TYPE_NONE) {
 		return GATTLIB_NOT_FOUND;
@@ -1050,7 +1058,7 @@ int gattlib_indication_stop(gatt_connection_t* connection, const uuid_t* uuid) {
 #endif
 
 	g_signal_handlers_disconnect_by_func(
-			dbus_characteristic.gatt,
+			signal_data,
 			G_CALLBACK (on_handle_characteristic_indication),
 			connection);
 
