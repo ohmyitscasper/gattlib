@@ -129,13 +129,7 @@ struct dbus_characteristic get_characteristic_from_uuid(gatt_connection_t* conne
 		return dbus_characteristic;
 	}
 
-	GDBusObjectManager *device_manager = g_dbus_object_manager_client_new_for_bus_sync (
-			G_BUS_TYPE_SYSTEM,
-			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
-			"org.bluez",
-			"/",
-			NULL, NULL, NULL, NULL,
-			&error);
+	GDBusObjectManager *device_manager = conn_context->device_manager;
 	if (device_manager == NULL) {
 		if (error) {
 			fprintf(stderr, "Failed to get Bluez Device Manager: %s\n", error->message);
@@ -182,7 +176,6 @@ struct dbus_characteristic get_characteristic_from_uuid(gatt_connection_t* conne
 	}
 
 	g_list_free_full(objects, g_object_unref);
-	g_object_unref(device_manager);
 
 	return dbus_characteristic;
 }

@@ -186,12 +186,32 @@ gatt_connection_t *gattlib_connect(const char *src, const char *dst, unsigned lo
 		goto FREE_DEVICE;
 	}
 
+	// Initialize device manager
+	GDBusObjectManager *device_manager = g_dbus_object_manager_client_new_for_bus_sync (
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+			"org.bluez",
+			"/",
+			NULL, NULL, NULL, NULL,
+			&error);
+	if (device_manager == NULL) {
+		if (error) {
+			fprintf(stderr, "Failed to get Bluez Device Manager: %s\n", error->message);
+			g_error_free(error);
+		} else {
+			fprintf(stderr, "Failed to get Bluez Device Manager.\n");
+		}
+		goto FREE_DEVICE;
+	}
+
 	// Wait for the property 'UUIDs' to be changed. We assume 'org.bluez.GattService1
 	// and 'org.bluez.GattCharacteristic1' to be advertised at that moment.
 	conn_context->connection_loop = g_main_loop_new(NULL, 0);
 
 	conn_context->connection_timeout = g_timeout_add_seconds(CONNECT_TIMEOUT, stop_scan_func,
 								 conn_context->connection_loop);
+	conn_context->device_manager = device_manager;
+
 	g_main_loop_run(conn_context->connection_loop);
 	g_main_loop_unref(conn_context->connection_loop);
 	// Set the attribute to NULL even if not required
@@ -237,6 +257,7 @@ int gattlib_disconnect(gatt_connection_t* connection) {
 
 	free(conn_context->device_object_path);
 	g_object_unref(conn_context->device);
+	g_object_unref(conn_context->device_manager);
 
 	free(connection->context);
 	free(connection);
