@@ -53,6 +53,7 @@ typedef struct {
 	GMainLoop *connection_loop;
 	// ID of the timeout to know if we managed to connect to the device
 	guint connection_timeout;
+	GDBusObjectManager *device_manager;
 } gattlib_context_t;
 
 struct dbus_characteristic {
